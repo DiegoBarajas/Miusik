@@ -1,0 +1,149 @@
+.card {
+    width: 90%;
+    height: 150px;
+    margin: 15px;
+}
+
+.card-active {
+    --background: linear-gradient(to left, #f7ba2b 0%, #ea5358 100%);
+
+    padding: 5px;
+    border-radius: 1rem;
+    overflow: visible;
+    background: #f7ba2b;
+    background: var(--background);
+    position: relative;
+    z-index: 1;
+}
+   
+.card-active::after {
+    position: absolute;
+    content: "";
+    top: 5px;
+    left: 0;
+    right: 0;
+    z-index: -1;
+    height: 100%;
+    width: 100%;
+    transform: scale(0.90);
+    filter: blur(25px);
+    background: #f7ba2b;
+    background: var(--background);
+    transition: opacity .25s;
+    opacity: 00;
+}
+   
+.card-active-info {
+    --color: #181818;
+    background: var(--color);
+    color: var(--color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    border-radius: .7rem;
+}
+   
+.title {
+    font-weight: bold;
+    letter-spacing: .1em;
+    color: white;
+}
+   
+.card-active:hover::after {
+    opacity: 100;
+}
+   
+.card-active:hover .card-info {
+    color: #f7ba2b;
+    transition: color 1s;
+}
+
+/*   I N A C T I V E   */
+
+.card-inactive{
+    padding: 5px;
+    border-radius: 1rem;
+    overflow: visible;
+    position: relative;
+    z-index: 1;
+    background: #181818;
+}
+
+.card-inactive:hover {
+    background: linear-gradient(to right, #2bf79b 0%, #536cea 100%);
+    animation-name: showContorno;
+    animation-duration:  .7s; 
+    animation-timing-function: linear;
+}
+
+.card-inactive:not(:hover){
+    background: #181818; 
+    animation-name: unshowContorno;
+    animation-duration: .65s; 
+    animation-timing-function: linear;
+
+}
+
+@keyframes showContorno {
+    0%{
+        background: #181818;
+    }100%{
+        --background: linear-gradient(to right, #2bf79b 0%, #536cea 100%);
+    }
+}
+
+@keyframes unshowContorno {
+    0%{
+        --background: linear-gradient(to right, #2bf79b 0%, #536cea 100%);
+        background: linear-gradient(to right, #2bf79b 0%, #536cea 100%);
+    }100%{
+        background: #181818;
+    }
+}
+.card-inactive-info {
+    --color: #181818;
+    background: var(--color);
+    color: var(--color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    border-radius: .7rem;
+}
+   
+.card-inactive .title {
+    font-weight: bold;
+    letter-spacing: .1em;
+}
+   
+.card-inactive:hover .card-info {
+    color: #f7ba2b;
+    transition: color 1s;
+}
+
+.card-inactive::after {
+    position: absolute;
+    content: "";
+    top: 5px;
+    left: 0;
+    right: 0;
+    z-index: -1;
+    height: 100%;
+    width: 100%;
+    transform: scale(0.90);
+    filter: blur(25px);
+    background: #f7ba2b;
+    background: linear-gradient(to right, #2bf79b 0%, #536cea 100%);
+    transition: opacity .25s;
+    opacity: 00;
+}
+
+  
+.card-inactive:hover::after {
+    opacity: 100;
+}
