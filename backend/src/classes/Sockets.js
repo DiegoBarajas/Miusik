@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const mm = require('music-metadata');
 
 class Sockets{
 
@@ -11,10 +12,12 @@ class Sockets{
 
     socketEvents(){
         this.io.on('connection', (socket) => {
-            console.log('New Connection:', socket);
+            console.log('New Connection:', socket.id);
 
             socket.on('getAllSongs', () => {
-                console.log(getAllFiles(path.resolve(__dirname, '../media')));
+                readFilesArray( getAllFiles(path.resolve(__dirname, '../media')) ).then(data => {
+                    socket.emit('sendBinaries',  data);
+                });
             });
 
         });
@@ -28,11 +31,23 @@ function getAllFiles(folder){
     return fs.readdirSync(folder)
         .map(nombreArchivo => {
             const rutaArchivo = path.join(folder, nombreArchivo);
-            if (fs.statSync(rutaArchivo).isFile()) return folder + nombreArchivo;
+            if (fs.statSync(rutaArchivo).isFile()) return folder + '/' + nombreArchivo;
         })
         .filter(nombreArchivo => nombreArchivo !== undefined);
 }
 
-function readFilesArray(array){
-    
+async function readFilesArray(array) {
+    const promises = array.map(async (element) => {
+        const blob = fs.readFileSync(element);
+        const metadata = await mm.parseBuffer(blob);
+
+        return {
+            blob,
+            artist: metadata.common.artist,
+            album: metadata.common.album,
+            songName: metadata.common.title
+        };
+    });
+
+    return Promise.all(promises);
 }
