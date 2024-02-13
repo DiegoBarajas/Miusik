@@ -44,7 +44,6 @@ async function readFilesArray(array) {
         return {
             blob,
             artist: metadata.common.artist,
-            album: metadata.common.album,
             songName: metadata.common.title
         };
     });
