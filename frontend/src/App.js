@@ -13,16 +13,21 @@ const App = () => {
     const [songsInfo, setSongsInfo] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(-1);
     const [audioURL, setAudioURL] = useState('');
+    const [duration, setDuration] = useState('0:00');
+    const [currentDuration, setCurrentDuration] = useState('0:00');
+    const [currentTime, setCurrentTime] = useState(0);
+    const [songName, setSongName] = useState('');
+    const [artist, setArtist] = useState('');
 
     // useEffect
     useEffect(() => {
-      socket.emit('client:getSongsInfo')
+      socket.emit('client:getSongsInfo');
     }, []);
 
     useEffect(() => {
         if(audioURL != '') { 
           audioRef.current.src = audioURL;
-          audioRef.current.play() 
+          audioRef.current.play();
         };
     }, [audioURL]);
 
@@ -37,21 +42,59 @@ const App = () => {
     });
 
     // Functions
-    function selectSong(songInfo){
+    function selectSong(songInfo, index){
+      setCurrentIndex(index);
+      setSongName(songInfo.common.title);
+      setArtist(songInfo.common.artist);
+
       socket.emit('client:getBufferSong', songInfo.path);
     }
 
     function updateTime(){
-      //console.log(audioRef.current.currentTime);
+      setCurrentDuration(convertirSegundosAFormato(audioRef.current.currentTime));
+      setDuration(convertirSegundosAFormato(audioRef.current.duration));
+
+      setCurrentTime(audioRef.current.currentTime);
     }
+
+    const handleSeek = (event) => {
+      const newTime = parseFloat(event.target.value);
+      audioRef.current.currentTime = newTime;
+      setCurrentTime(newTime);
+    };
 
     function pause(){
+      if(audioRef.current.paused) audioRef.current.play();
+      else audioRef.current.pause();
     }
 
-    function next(){
+    function next(){     
+      if(currentIndex+1 > songsInfo.length) return;
+      setSongName(songsInfo[currentIndex+1].common.title);
+      setArtist(songsInfo[currentIndex+1].common.artist);
+      socket.emit('client:getBufferSong', songsInfo[currentIndex+1].path);
+
+      setCurrentIndex(currentIndex+1);
     }
 
     function prev(){
+      if(currentIndex == 0) return;
+      setSongName(songsInfo[currentIndex-1].common.title);
+      setArtist(songsInfo[currentIndex-1].common.artist);
+      socket.emit('client:getBufferSong', songsInfo[currentIndex-1].path);
+
+      setCurrentIndex(currentIndex-1);
+    }
+
+    function convertirSegundosAFormato(s) {
+      if(audioRef.current == null) return '0:00';    
+      const segundos = parseInt(s);
+      const minutos = Math.floor(segundos / 60);
+      const segundosRestantes = segundos % 60;
+      const minutosFormateados = minutos < 10 ? `0${minutos}` : minutos;
+      const segundosFormateados = segundosRestantes < 10 ? `0${segundosRestantes}` : segundosRestantes;
+      if( isNaN(minutosFormateados) ) return '0:00'
+      return `${minutosFormateados}:${segundosFormateados}`;
     }
 
     return (
@@ -61,6 +104,7 @@ const App = () => {
           id='audio' 
           src={''}
           onTimeUpdate={updateTime}
+          onEnded={next}
         ></audio>
 
         <Column reverse={false}>
@@ -73,7 +117,7 @@ const App = () => {
                   songName={m.common.title}
                   artist={m.common.artist}
                   active={true}
-                  onClick={() => selectSong(m)}
+                  onClick={() => selectSong(m, index)}
                 />
               : <Card 
                   key={'card-'+index}
@@ -81,7 +125,7 @@ const App = () => {
                   songName={m.common.title}
                   artist={m.common.artist}
                   active={false}
-                  onClick={() => selectSong(m)}
+                  onClick={() => selectSong(m, index)}
                 />
             }
               
@@ -91,16 +135,16 @@ const App = () => {
         </Column>
 
         <Controls
-          isPaused={true}
-          songName={''}
-          artist={''}
-          completeDuration={convertirSegundosAFormato(audioRef.current, 'duration')}
-          currentDuration={convertirSegundosAFormato(audioRef.current, 'currentTime')}
-          max={''}
-          rangeValue={''}
-          length={''}
-          currentIndex={0}
-          onChange={() => {}}
+          isPaused={ audioRef.current ? audioRef.current.paused : false }
+          songName={ songName }
+          artist={ artist }
+          completeDuration={duration}
+          currentDuration={currentDuration}
+          max={audioRef.current ? audioRef.current.duration : 0}
+          rangeValue={currentTime}
+          length={songsInfo.length}
+          currentIndex={currentIndex}
+          onChange={handleSeek}
           pause={pause}
           next={next}
           prev={prev}
@@ -119,15 +163,3 @@ const App = () => {
 }
 
 export default App
-
-function convertirSegundosAFormato(audio, key) {
-  if(audio === null) return '0:00';
-  const s = audio[key];
-  console.log(s);
-  const segundos = parseInt(s);
-  const minutos = Math.floor(segundos / 60);
-  const segundosRestantes = segundos % 60;
-  const minutosFormateados = minutos < 10 ? `0${minutos}` : minutos;
-  const segundosFormateados = segundosRestantes < 10 ? `0${segundosRestantes}` : segundosRestantes;
-  return `${minutosFormateados}:${segundosFormateados}`;
-}

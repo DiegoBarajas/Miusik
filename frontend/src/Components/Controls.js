@@ -11,7 +11,7 @@ const Controls = ({ length, currentIndex, isPaused, currentDuration, completeDur
             <div className='controls-container'>
 
                 <div className='song-info'>
-                    <p className='song-name'>{songName}</p>
+                    <p className='song-name' style={{ marginTop: '10px' }}>{songName}</p>
                     <p>{artist}</p>
                 </div>
 
