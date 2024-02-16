@@ -13,12 +13,42 @@ class Sockets{
     socketEvents(){
         this.io.on('connection', (socket) => {
             console.log('New Connection:', socket.id);
+            
+            // Obtiene la metadata y path de todas las canciones
+            socket.on('client:getSongsInfo', async() => {
 
-            socket.on('getAllSongs', () => {
-                readFilesArray( getAllFiles(path.resolve(__dirname, '../media')) ).then(data => {
-                    socket.emit('sendBinaries',  data);
-                });
+                const PATH = path.resolve(__dirname, '../media');
+                const metadataArray = [];
+
+                fs.readdir(PATH, async (err, files) => {
+                    if (err) {
+                        console.error('Error al leer la carpeta:', err);
+                        return;
+                    }
+                
+                    for (const file of files) {
+                        const filePath = path.join(PATH, file);
+                
+                        try {
+                            const metadata = await mm.parseFile(filePath);
+                            metadataArray.push({ ...metadata, path: filePath });
+                        } catch (error) {
+                            console.error('Error al obtener la metadata de la canción', file, ':', error.message);
+                        }
+                    }
+
+                    socket.emit('server:sendSongsInfo', metadataArray);
+                });     
+
             });
+
+            // Obtiene el buffer o blob de la cancion
+            socket.on('client:getBufferSong', (path) => {
+                const buffer = fs.readFileSync(path);
+                socket.emit('server:sendBufferSong', buffer);
+            })
+
+
 
         });
     }
@@ -26,27 +56,3 @@ class Sockets{
 }
 
 module.exports = Sockets;
-
-function getAllFiles(folder){
-    return fs.readdirSync(folder)
-        .map(nombreArchivo => {
-            const rutaArchivo = path.join(folder, nombreArchivo);
-            if (fs.statSync(rutaArchivo).isFile()) return folder + '/' + nombreArchivo;
-        })
-        .filter(nombreArchivo => nombreArchivo !== undefined);
-}
-
-async function readFilesArray(array) {
-    const promises = array.map(async (element) => {
-        const blob = fs.readFileSync(element);
-        const metadata = await mm.parseBuffer(blob);
-
-        return {
-            blob,
-            artist: metadata.common.artist,
-            songName: metadata.common.title
-        };
-    });
-
-    return Promise.all(promises);
-}
