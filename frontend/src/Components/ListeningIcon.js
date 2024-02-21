@@ -1,9 +1,9 @@
 import React from 'react';
 import '../Styles/ListeningIcon.css';
 
-const ListeningIcon = () => {
+const ListeningIcon = ({paused}) => {
     return (
-        <div className='loader'></div>
+        <div className={paused ? 'loader paused' : 'loader'}></div>
     )
 }
 

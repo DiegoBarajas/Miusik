@@ -18,6 +18,10 @@ const App = () => {
     const [currentTime, setCurrentTime] = useState(0);
     const [songName, setSongName] = useState('');
     const [artist, setArtist] = useState('');
+    const [random, setRandom] = useState(false);
+    const [repeat, setRepeat] = useState(false);
+
+    const [randomList, setRandomList] = useState([]);
 
     // useEffect
     useEffect(() => {
@@ -69,6 +73,19 @@ const App = () => {
     }
 
     function next(){     
+      if(random){
+        if(currentIndex+1 > randomList.length){
+          setSongName(randomList[0].common.title);
+          setArtist(randomList[0].common.artist);
+          socket.emit('client:getBufferSong', randomList[0].path);
+        }
+        setSongName(randomList[currentIndex+1].common.title);
+        setArtist(randomList[currentIndex+1].common.artist);
+        socket.emit('client:getBufferSong', randomList[currentIndex+1].path);
+
+        setCurrentIndex(currentIndex+1);
+        return;
+      }
       if(currentIndex+1 > songsInfo.length) return;
       setSongName(songsInfo[currentIndex+1].common.title);
       setArtist(songsInfo[currentIndex+1].common.artist);
@@ -84,6 +101,25 @@ const App = () => {
       socket.emit('client:getBufferSong', songsInfo[currentIndex-1].path);
 
       setCurrentIndex(currentIndex-1);
+    }
+
+    function rand(){
+      const randList = makeRandomList(songsInfo, currentIndex);
+      setRandom(!random);
+      setRandomList(randList);
+    }
+
+    function repetir(){
+      setRepeat(!repeat);
+    }
+
+    function stop(){
+      audioRef.current.src = '';
+      setCurrentIndex(-1);
+    }
+
+    function restart(){
+      audioRef.current.currentTime = 0;
     }
 
     function convertirSegundosAFormato(s) {
@@ -112,6 +148,7 @@ const App = () => {
             songsInfo.map((m, index) => {
               return currentIndex === index
               ? <Card 
+                  paused={audioRef.current.src != '' ? audioRef.current.paused : false}
                   key={'card-'+index}
                   index={index+1}
                   songName={m.common.title}
@@ -120,6 +157,7 @@ const App = () => {
                   onClick={() => selectSong(m, index)}
                 />
               : <Card 
+                  paused={false}
                   key={'card-'+index}
                   index={index+1}
                   songName={m.common.title}
@@ -134,21 +172,31 @@ const App = () => {
 
         </Column>
 
-        <Controls
-          isPaused={ audioRef.current ? audioRef.current.paused : false }
-          songName={ songName }
-          artist={ artist }
-          completeDuration={duration}
-          currentDuration={currentDuration}
-          max={audioRef.current ? audioRef.current.duration : 0}
-          rangeValue={currentTime}
-          length={songsInfo.length}
-          currentIndex={currentIndex}
-          onChange={handleSeek}
-          pause={pause}
-          next={next}
-          prev={prev}
-        />
+        {
+          (audioRef.current != null) && (audioRef.current.src != '') && (audioRef.current.src != window.location)
+          ? <Controls
+              isPaused={ audioRef.current ? audioRef.current.paused : false }
+              songName={ songName }
+              artist={ artist }
+              completeDuration={duration}
+              currentDuration={currentDuration}
+              max={audioRef.current ? audioRef.current.duration : 0}
+              rangeValue={currentTime}
+              length={songsInfo.length}
+              currentIndex={currentIndex}
+              onChange={handleSeek}
+              pause={pause}
+              next={next}
+              prev={prev}
+              random={random}
+              repeat={repeat}
+              setRandom={rand}
+              setRepeat={repetir}
+              stop={stop}
+              restart={restart}
+            />
+        : <></>
+        }
 
         <div 
           style={{
@@ -163,3 +211,17 @@ const App = () => {
 }
 
 export default App
+
+function makeRandomList(array, index){
+  const compararAleatoriamente = () => Math.random() - 0.5;
+  const randomArray = [...array].sort(compararAleatoriamente);
+
+  const indexTmp = randomArray.indexOf(array[index]);
+
+  const aux = randomArray[0];
+  randomArray[0] = array[index];
+  randomArray[indexTmp] = aux;
+
+  console.log(randomArray);
+  return randomArray;
+}
