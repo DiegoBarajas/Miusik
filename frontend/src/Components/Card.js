@@ -3,10 +3,10 @@ import '../Styles/Card.css';
 import ListeningIcon from './ListeningIcon';
 import playImg from '../media/play.png'
 
-const Card = ({ active, songName, artist, index, onClick, paused }) => {
+const Card = ({ active, songName, artist, index, onClick, paused, id }) => {
     return (
         active 
-        ? <div className="card-active card" onClick={onClick}>
+        ? <div id={id} className="card-active card" onClick={onClick}>
             <div className="card-info">
                 <div style={{ width: '10%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                     <ListeningIcon paused={paused}/>
@@ -20,7 +20,7 @@ const Card = ({ active, songName, artist, index, onClick, paused }) => {
             </div>
         </div>  
 
-        : <div className="card-inactive card" onClick={onClick}>
+        : <div id={id} className="card-inactive card" onClick={onClick}>
             <div className="card-info">
                 <div style={{ width: '5%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                     <img src={playImg} className='play-img'/>

@@ -11,7 +11,9 @@ const App = () => {
 
     // Variables de estado
     const [songsInfo, setSongsInfo] = useState([]);
+    const [currentSongsInfo, setCurrentSongsInfo] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(-1);
+    const [originalIndex, setOriginalIndex] = useState(-1);
     const [audioURL, setAudioURL] = useState('');
     const [duration, setDuration] = useState('0:00');
     const [currentDuration, setCurrentDuration] = useState('0:00');
@@ -20,8 +22,6 @@ const App = () => {
     const [artist, setArtist] = useState('');
     const [random, setRandom] = useState(false);
     const [repeat, setRepeat] = useState(false);
-
-    const [randomList, setRandomList] = useState([]);
 
     // useEffect
     useEffect(() => {
@@ -38,6 +38,7 @@ const App = () => {
     // Sockets events
     socket.on('server:sendSongsInfo', (metadata) => {
       setSongsInfo(metadata);
+      setCurrentSongsInfo(metadata);
     });
 
     socket.on('server:sendBufferSong', (buffer) => {
@@ -48,6 +49,7 @@ const App = () => {
     // Functions
     function selectSong(songInfo, index){
       setCurrentIndex(index);
+      setOriginalIndex(songInfo.originalIndex);
       setSongName(songInfo.common.title);
       setArtist(songInfo.common.artist);
 
@@ -72,41 +74,45 @@ const App = () => {
       else audioRef.current.pause();
     }
 
-    function next(){     
-      if(random){
-        if(currentIndex+1 > randomList.length){
-          setSongName(randomList[0].common.title);
-          setArtist(randomList[0].common.artist);
-          socket.emit('client:getBufferSong', randomList[0].path);
-        }
-        setSongName(randomList[currentIndex+1].common.title);
-        setArtist(randomList[currentIndex+1].common.artist);
-        socket.emit('client:getBufferSong', randomList[currentIndex+1].path);
-
-        setCurrentIndex(currentIndex+1);
-        return;
-      }
-      if(currentIndex+1 > songsInfo.length) return;
-      setSongName(songsInfo[currentIndex+1].common.title);
-      setArtist(songsInfo[currentIndex+1].common.artist);
-      socket.emit('client:getBufferSong', songsInfo[currentIndex+1].path);
+    function next(){
+      if(currentIndex+1 > currentSongsInfo.length) return;
+      document.querySelector('#card-'+currentSongsInfo[currentIndex+1].originalIndex).scrollIntoView();
+      setSongName(songsInfo[currentSongsInfo[currentIndex+1].originalIndex].common.title);
+      setArtist(songsInfo[currentSongsInfo[currentIndex+1].originalIndex].common.artist);
+      socket.emit('client:getBufferSong', currentSongsInfo[currentIndex+1].path);
 
       setCurrentIndex(currentIndex+1);
+      setOriginalIndex(currentSongsInfo[currentIndex+1].originalIndex);
+
+      console.log(currentSongsInfo[currentIndex+1].originalIndex);
+
+
     }
 
     function prev(){
       if(currentIndex == 0) return;
-      setSongName(songsInfo[currentIndex-1].common.title);
-      setArtist(songsInfo[currentIndex-1].common.artist);
-      socket.emit('client:getBufferSong', songsInfo[currentIndex-1].path);
+      document.querySelector('#card-'+currentSongsInfo[currentIndex-1].originalIndex).scrollIntoView();
+      setSongName(songsInfo[currentSongsInfo[currentIndex-1].originalIndex].common.title);
+      setArtist(songsInfo[currentSongsInfo[currentIndex-1].originalIndex].common.artist);
+      socket.emit('client:getBufferSong', currentSongsInfo[currentIndex-1].path);
 
       setCurrentIndex(currentIndex-1);
+      setOriginalIndex(currentSongsInfo[currentIndex-1].originalIndex);
+
+      console.log(currentSongsInfo[currentIndex-1].originalIndex);
+
+
     }
 
     function rand(){
-      const randList = makeRandomList(songsInfo, currentIndex);
+      if(random){
+        setCurrentSongsInfo(songsInfo);
+      }else{
+        const randList = makeRandomList(songsInfo, currentIndex);
+        setCurrentSongsInfo(randList);
+      }
       setRandom(!random);
-      setRandomList(randList);
+      
     }
 
     function repetir(){
@@ -146,8 +152,9 @@ const App = () => {
         <Column reverse={false}>
           {
             songsInfo.map((m, index) => {
-              return currentIndex === index
+              return originalIndex === index
               ? <Card 
+                  id={"card-"+m.originalIndex}
                   paused={audioRef.current.src != '' ? audioRef.current.paused : false}
                   key={'card-'+index}
                   index={index+1}
@@ -157,6 +164,7 @@ const App = () => {
                   onClick={() => selectSong(m, index)}
                 />
               : <Card 
+              id={"card-"+m.originalIndex}
                   paused={false}
                   key={'card-'+index}
                   index={index+1}
@@ -222,6 +230,5 @@ function makeRandomList(array, index){
   randomArray[0] = array[index];
   randomArray[indexTmp] = aux;
 
-  console.log(randomArray);
   return randomArray;
 }

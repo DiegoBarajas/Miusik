@@ -31,7 +31,7 @@ class Sockets{
                 
                         try {
                             const metadata = await mm.parseFile(filePath);
-                            metadataArray.push({ ...metadata, path: filePath });
+                            metadataArray.push({ ...metadata, path: filePath, originalIndex: metadataArray.length });
                         } catch (error) {
                             console.error('Error al obtener la metadata de la canción', file, ':', error.message);
                         }
