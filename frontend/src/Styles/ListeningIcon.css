@@ -50,3 +50,22 @@
 .paused::after{
   animation-play-state: paused;
 }
+
+@media only screen and (max-width: 600px) {
+  .loader {
+    width: 3px;
+    height: 15px
+  }
+
+  .loader::after,
+  .loader::before {
+    width: 3px;
+    height: 1px;
+    left: 10px;
+  }
+
+  .loader::before {
+    left: -10px;
+  }
+
+}

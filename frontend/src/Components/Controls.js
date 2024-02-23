@@ -10,42 +10,42 @@ import repeatIcon from '../media/repetir.png'
 import restartIcon from '../media/reiniciar.png';
 
 
-const Controls = ({ length, currentIndex, isPaused, currentDuration, completeDuration, rangeValue, songName, artist, max, onChange, pause, prev, next, random, repeat, setRandom, setRepeat, stop, restart }) => {
+const Controls = ({  }) => {
     return (
         <div className='controls'>
             <div className='controls-container'>
 
                 <div className='song-info'>
-                    <p className='song-name' style={{ marginTop: '10px' }}>{songName}</p>
-                    <p>{artist}</p>
+                    <p className='song-name' style={{ marginTop: '10px' }}>{'songName'}</p>
+                    <p>{'artist'}</p>
                 </div>
 
                 <div className='controles'>
-                    <button onClick={setRandom} className={random ? '' : 'can-be-disable'}> <img src={randomIcon}/> </button>
-                    <button onClick={restart}> <img src={restartIcon}/> </button>
+                    <button onClick={()=>{}} className={'can-be-disable'}> <img src={randomIcon}/> </button>
+                    <button onClick={()=>{}}> <img src={restartIcon}/> </button>
 
-                    <button className={currentIndex === 0 ? 'inactive' : ''} onClick={currentIndex === 0 ? () => {} : prev}> <img src={prevIcon}/> </button>
-                    <button onClick={pause}> <img src={isPaused ? playIcon : pauseIcon}/> </button>
-                    <button className={currentIndex+1 ===length ? 'inactive' : ''} onClick={currentIndex+1 ===length ? () => {} : next}> <img src={nextIcon}/> </button>
+                    <button className={'inactive'} onClick={()=>{}}> <img src={prevIcon}/> </button>
+                    <button onClick={()=>{}}> <img src={false ? playIcon : pauseIcon}/> </button>
+                    <button className={'inactive'} onClick={()=>{}}> <img src={nextIcon}/> </button>
                     
-                    <button onClick={stop}> <img src={stopIcon}/> </button>
-                    <button onClick={setRepeat} className={repeat ? '' : 'can-be-disable'}> <img src={repeatIcon}/> </button>
+                    <button onClick={()=>{}}> <img src={stopIcon}/> </button>
+                    <button onClick={()=>{}} className={'can-be-disable'}> <img src={repeatIcon}/> </button>
 
                 </div>
                 
                 <div className='time-container'>
-                    <label>{ currentDuration }</label>
+                    <label>{ '0:00' }</label>
                     <input 
                         id="myRange" 
                         className="slider" 
-                        value={rangeValue} 
-                        max={max}
+                        value={50} 
+                        max={100}
                         min="0" 
                         type="range"
                         step={1}
-                        onChange={onChange}
+                        onChange={() => {}}
                     />
-                    <label>{ completeDuration }</label>
+                    <label>{ "0:00" }</label>
                 </div>
 
             </div>

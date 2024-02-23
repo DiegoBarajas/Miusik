@@ -1,0 +1,62 @@
+.background {
+    width: 100%;
+    height: max-content;
+    content: '';
+    --s: 37px; /* control the size */
+  
+    --c: #0000, #282828 0.5deg 119.5deg, #0000 120deg;
+    --g1: conic-gradient(from 60deg at 56.25% calc(425% / 6), var(--c));
+    --g2: conic-gradient(from 180deg at 43.75% calc(425% / 6), var(--c));
+    --g3: conic-gradient(from -60deg at 50% calc(175% / 12), var(--c));
+    background: var(--g1), var(--g1) var(--s) calc(1.73 * var(--s)), var(--g2),
+      var(--g2) var(--s) calc(1.73 * var(--s)), var(--g3) var(--s) 0,
+      var(--g3) 0 calc(1.73 * var(--s)) #1e1e1e;
+    background-size: calc(2 * var(--s)) calc(3.46 * var(--s));
+    margin-bottom: 30px;
+}
+
+.background-container{
+    padding-left: 80px;
+    padding-top: 50px;
+    width: fit-content;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    justify-content: center;
+    flex-direction: column;
+    padding-bottom: 10px;
+}
+  
+.background h1 {
+    width: min-content;
+    margin: 0px;
+    padding: 0px;
+    font-size: 170px;
+    background: linear-gradient(to left, #f7ba2b 0%, #ea5358 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    vertical-align: middle;
+    line-height: 1;
+    text-align: start;
+}
+
+.background p{
+    padding: 0px;
+    margin: 0px;
+    color: white;
+    width: 100%;
+    text-align: start;
+}
+
+@media only screen and (max-width: 600px) {
+    .background-container{
+        padding-left: 30px;
+        padding-top: 50px;
+    }
+
+    .background h1 {
+        font-size: 70px;
+    }
+}

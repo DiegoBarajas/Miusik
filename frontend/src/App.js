@@ -3,13 +3,18 @@ import { socket } from './socket';
 import Card from './Components/Card';
 import Column from './Components/Column';
 import Controls from './Components/Controls';
-
+import ConnectedCard from './Components/ConnectedCard';
+import Loader from './Components/Loader';
+import Title from './Components/Title';
 
 const App = () => {
     // Referencia
     const audioRef = useRef(null);
 
     // Variables de estado
+
+    const [connectedCardActive, setConnectedCardActive] = useState(-1);
+
     const [songsInfo, setSongsInfo] = useState([]);
     const [currentSongsInfo, setCurrentSongsInfo] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(-1);
@@ -22,6 +27,9 @@ const App = () => {
     const [artist, setArtist] = useState('');
     const [random, setRandom] = useState(false);
     const [repeat, setRepeat] = useState(false);
+
+    const [isConnected, setIsConnected] = useState(socket.connected);
+
 
     // useEffect
     useEffect(() => {
@@ -36,6 +44,9 @@ const App = () => {
     }, [audioURL]);
 
     // Sockets events
+    socket.on('connect', onConnect);
+    socket.on('disconnect', onDisconnect);
+
     socket.on('server:sendSongsInfo', (metadata) => {
       setSongsInfo(metadata);
       setCurrentSongsInfo(metadata);
@@ -47,31 +58,30 @@ const App = () => {
     });
 
     // Functions
-    function selectSong(songInfo, index){
-      setCurrentIndex(index);
-      setOriginalIndex(songInfo.originalIndex);
-      setSongName(songInfo.common.title);
-      setArtist(songInfo.common.artist);
+    function onConnect() {
+      setIsConnected(1);
+      setTimeout(()=>setConnectedCardActive(0), 2000);
+    }
 
-      socket.emit('client:getBufferSong', songInfo.path);
+    function onDisconnect() {
+      setIsConnected(false);
+      setConnectedCardActive(0);
+    }
+
+    function selectSong(){
+      
     }
 
     function updateTime(){
       setCurrentDuration(convertirSegundosAFormato(audioRef.current.currentTime));
-      setDuration(convertirSegundosAFormato(audioRef.current.duration));
 
-      setCurrentTime(audioRef.current.currentTime);
     }
 
     const handleSeek = (event) => {
-      const newTime = parseFloat(event.target.value);
-      audioRef.current.currentTime = newTime;
-      setCurrentTime(newTime);
     };
 
     function pause(){
-      if(audioRef.current.paused) audioRef.current.play();
-      else audioRef.current.pause();
+      
     }
 
     function next(){
@@ -90,42 +100,18 @@ const App = () => {
     }
 
     function prev(){
-      if(currentIndex == 0) return;
-      document.querySelector('#card-'+currentSongsInfo[currentIndex-1].originalIndex).scrollIntoView();
-      setSongName(songsInfo[currentSongsInfo[currentIndex-1].originalIndex].common.title);
-      setArtist(songsInfo[currentSongsInfo[currentIndex-1].originalIndex].common.artist);
-      socket.emit('client:getBufferSong', currentSongsInfo[currentIndex-1].path);
-
-      setCurrentIndex(currentIndex-1);
-      setOriginalIndex(currentSongsInfo[currentIndex-1].originalIndex);
-
-      console.log(currentSongsInfo[currentIndex-1].originalIndex);
-
-
     }
 
     function rand(){
-      if(random){
-        setCurrentSongsInfo(songsInfo);
-      }else{
-        const randList = makeRandomList(songsInfo, currentIndex);
-        setCurrentSongsInfo(randList);
-      }
-      setRandom(!random);
-      
     }
 
     function repetir(){
-      setRepeat(!repeat);
     }
 
     function stop(){
-      audioRef.current.src = '';
-      setCurrentIndex(-1);
     }
 
     function restart(){
-      audioRef.current.currentTime = 0;
     }
 
     function convertirSegundosAFormato(s) {
@@ -139,8 +125,31 @@ const App = () => {
       return `${minutosFormateados}:${segundosFormateados}`;
     }
 
-    return (
+    return songsInfo.length == 0 
+    ? <div>
+        <Loader/>
+        {
+            !isConnected 
+              ? <ConnectedCard>
+                  El servidor no esta conectado :(<br/>Compruebe su conexión a internet
+                </ConnectedCard> 
+              : <ConnectedCard green active={connectedCardActive}>
+                  Conexión reestablecida :)
+                </ConnectedCard>
+          }    
+    </div> 
+    : (
       <div>
+        {
+          !isConnected 
+            ? <ConnectedCard>
+                El servidor no esta conectado :(<br/>Compruebe su conexión a internet
+              </ConnectedCard> 
+            : <ConnectedCard green active={connectedCardActive}>
+                Conexión reestablecida :)
+              </ConnectedCard>
+        }      
+
         <audio 
           ref={audioRef}
           id='audio' 
@@ -148,6 +157,11 @@ const App = () => {
           onTimeUpdate={updateTime}
           onEnded={next}
         ></audio>
+
+
+        
+
+        <Title/>
 
         <Column reverse={false}>
           {
@@ -181,27 +195,9 @@ const App = () => {
         </Column>
 
         {
-          (audioRef.current != null) && (audioRef.current.src != '') && (audioRef.current.src != window.location)
+          (audioRef.current != null) && (audioRef.current.src != '') && (audioRef.current.src != window.location) || true
           ? <Controls
-              isPaused={ audioRef.current ? audioRef.current.paused : false }
-              songName={ songName }
-              artist={ artist }
-              completeDuration={duration}
-              currentDuration={currentDuration}
-              max={audioRef.current ? audioRef.current.duration : 0}
-              rangeValue={currentTime}
-              length={songsInfo.length}
-              currentIndex={currentIndex}
-              onChange={handleSeek}
-              pause={pause}
-              next={next}
-              prev={prev}
-              random={random}
-              repeat={repeat}
-              setRandom={rand}
-              setRepeat={repetir}
-              stop={stop}
-              restart={restart}
+              
             />
         : <></>
         }

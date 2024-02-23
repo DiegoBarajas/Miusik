@@ -96,6 +96,7 @@
     opacity: 0.7;
     -webkit-transition: .2s;
     transition: opacity .2s;
+    cursor: pointer;
   }
   
   .slider::-webkit-slider-thumb {
@@ -124,4 +125,11 @@
 .can-be-disable:hover{
     filter: invert(100%);
     filter: drop-shadow(0px 0px 5px rgba(255, 255, 255, .5));
+}
+
+
+@media only screen and (max-width: 600px) {
+    .slider {
+        width: 70%;
+    }
 }
