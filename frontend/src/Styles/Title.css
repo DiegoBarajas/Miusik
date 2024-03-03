@@ -50,6 +50,24 @@
     text-align: start;
 }
 
+.circle-buttons-container{
+    display: flex;
+    width: fit-content;
+    right: 20px;
+    position: absolute;
+    transform: translateY(-125%);
+}
+
+.circle-btn {
+    border-radius: 50%;
+    width: 70px;
+    height: 70px;
+}
+
+.main-circle-btn{
+
+}
+
 @media only screen and (max-width: 600px) {
     .background-container{
         padding-left: 30px;

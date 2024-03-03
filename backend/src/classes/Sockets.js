@@ -19,6 +19,7 @@ class Sockets{
 
                 const PATH = path.resolve(__dirname, '../media');
                 const metadataArray = [];
+                const bufferArray = [];
 
                 fs.readdir(PATH, async (err, files) => {
                     if (err) {
@@ -38,6 +39,16 @@ class Sockets{
                     }
 
                     socket.emit('server:sendSongsInfo', metadataArray);
+
+
+                    for(const md of metadataArray){
+                        const path = md.path;
+
+                        const buffer = fs.readFileSync(path);
+                        bufferArray.push(buffer);
+                    }
+
+                    socket.emit('server:sendBufferSongs', bufferArray);
                 });     
 
             });
